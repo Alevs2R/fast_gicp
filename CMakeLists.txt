@@ -8,9 +8,9 @@ option(BUILD_PYTHON_BINDINGS "Build python bindings" OFF)
 
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
 else()
-  add_definitions(-msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2)
-  set(CMAKE_C_FLAGS "-msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2")
-  set(CMAKE_CXX_FLAGS "-msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2")
+  add_definitions(-march=native)
+  set(CMAKE_C_FLAGS "-march=native")
+  set(CMAKE_CXX_FLAGS "-march=native")
 endif()
 
 set(CMAKE_BUILD_TYPE "Release")
@@ -158,3 +158,9 @@ if(catkin_FOUND)
     DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
     FILES_MATCHING PATTERN "*.hpp")
 endif()
+
+
+get_target_property(dirs fast_gicp LINK_LIBRARIES)
+foreach(dir ${dirs})
+  message(STATUS "dir='${dir}'")
+endforeach()
