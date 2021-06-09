@@ -1,7 +1,7 @@
 # fast_gicp
 
-## Important note
-__ It is a modified version of fast_gicp with `-march=native` flag added to CMakeLists.txt. This flag is required to use the library in [Apollo](https://github.com/ApolloAuto/apollo), because this optimization flag is added automatically to all Apollo modules during compilation and we get the segmentation fault without using this flag in third-party lib.
+>__Important note__ \
+It is a modified version of fast_gicp with `-march=native` flag added to CMakeLists.txt. This flag is required to use the library in [Apollo](https://github.com/ApolloAuto/apollo), because this optimization flag is added automatically to all Apollo modules during compilation and we get the segmentation fault without using this flag in third-party lib.
 
 This package is a collection of GICP-based fast point cloud registration algorithms. It constains a multi-threaded GICP as well as multi-thread and GPU implementations of our voxelized GICP (VGICP) algorithm. All the implemented algorithms have the PCL registration interface so that they can be used as an inplace replacement for GICP in PCL.
 
