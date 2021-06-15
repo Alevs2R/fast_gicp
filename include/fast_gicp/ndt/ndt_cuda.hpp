@@ -53,6 +53,8 @@ public:
   virtual void setInputSource(const PointCloudSourceConstPtr& cloud) override;
   virtual void setInputTarget(const PointCloudTargetConstPtr& cloud) override;
 
+  void saveTargetVoxelMap(const std::string& filename);
+
 protected:
   virtual void computeTransformation(PointCloudSource& output, const Matrix4& guess) override;
   virtual double linearize(const Eigen::Isometry3d& trans, Eigen::Matrix<double, 6, 6>* H, Eigen::Matrix<double, 6, 1>* b) override;

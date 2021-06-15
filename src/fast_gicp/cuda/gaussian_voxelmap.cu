@@ -284,5 +284,39 @@ void GaussianVoxelMap::create_bucket_table(cudaStream_t stream, const thrust::de
   thrust::transform(thrust::cuda::par.on(stream), index_buckets.begin(), index_buckets.end(), buckets.begin(), voxel_coord_select_kernel(coords));
 }
 
+template <class Archive>
+void GaussianVoxelMap::serialize(Archive& ar, const unsigned int version) {
+    ar& voxelmap_info;
+
+    thrust::host_vector<thrust::pair<Eigen::Vector3i, int>> buckets_host = buckets;
+    std::vector<std::pair<Eigen::Vector3i, int>> buckets_std(buckets_host.size());
+    
+    for (size_t i = 0; i < buckets_host.size(); i++) {
+      buckets_std[i] = std::make_pair(buckets_host[i].first, buckets_host[i].second);
+    }
+
+    ar & buckets_std;
+
+    // save voxel data
+    thrust::host_vector<int> num_points_host = num_points;
+    std::vector<int> num_points_std(num_points.size());
+    std::copy(num_points_host.begin(), num_points_host.end(), num_points_std.begin());
+
+    thrust::host_vector<Eigen::Vector3f> voxel_means_host = voxel_means;
+    std::vector<Eigen::Vector3f> voxel_means_std(num_points.size());
+    std::copy(voxel_means_host.begin(), voxel_means_host.end(), voxel_means_std.begin());
+
+    thrust::host_vector<Eigen::Matrix3f> voxel_covs_host = voxel_covs;
+    std::vector<Eigen::Matrix3f> voxel_covs_std(voxel_covs.size());
+    std::copy(voxel_covs_host.begin(), voxel_covs_host.end(), voxel_covs_std.begin());
+
+    ar& num_points_std;
+    ar& voxel_means_std;
+    ar& voxel_covs_std;
+}
+
+template void GaussianVoxelMap::serialize<boost::archive::binary_oarchive>(boost::archive::binary_oarchive& ar, const unsigned int version);
+
+
 }  // namespace cuda
 }  // namespace fast_gicp

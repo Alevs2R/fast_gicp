@@ -7,6 +7,7 @@
 #include <fast_gicp/cuda/find_voxel_correspondences.cuh>
 #include <fast_gicp/cuda/ndt_compute_derivatives.cuh>
 
+
 namespace fast_gicp {
 namespace cuda {
 
@@ -174,6 +175,20 @@ double NDTCudaCore::compute_error(const Eigen::Isometry3d& trans, Eigen::Matrix<
     case fast_gicp::NDTDistanceMode::D2D:
       return d2d_ndt_compute_derivatives(*target_voxelmap, *source_voxelmap, *correspondences, trans_ptr.data(), trans_ptr.data() + 1, H, b);
   }
+}
+
+void NDTCudaCore::save_target_voxelmap(const std::string& filename) {
+  // create and open a character archive for output
+  std::ofstream ofs(filename);
+  assert(ofs.good());
+  // save data to archive
+  {
+    boost::archive::binary_oarchive oa(ofs);
+    // write class instance to archive
+    oa << *target_voxelmap;
+    // archive and stream closed when destructors are called
+  }
+
 }
 
 }  // namespace cuda

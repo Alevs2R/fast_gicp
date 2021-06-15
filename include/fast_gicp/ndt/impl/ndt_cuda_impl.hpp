@@ -89,6 +89,11 @@ double NDTCuda<PointSource, PointTarget>::compute_error(const Eigen::Isometry3d&
   return ndt_cuda_->compute_error(trans, nullptr, nullptr);
 }
 
+template <typename PointSource, typename PointTarget>
+void NDTCuda<PointSource, PointTarget>::saveTargetVoxelMap(const std::string& filename) {
+  ndt_cuda_->save_target_voxelmap(filename);
+}
+
 }  // namespace fast_gicp
 
 #endif

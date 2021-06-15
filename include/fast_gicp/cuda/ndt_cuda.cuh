@@ -9,6 +9,9 @@
 #include <fast_gicp/ndt/ndt_settings.hpp>
 #include <fast_gicp/gicp/gicp_settings.hpp>
 
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+
 namespace thrust {
 template <typename T1, typename T2>
 class pair;
@@ -51,6 +54,8 @@ public:
 
   void update_correspondences(const Eigen::Isometry3d& trans);
   double compute_error(const Eigen::Isometry3d& trans, Eigen::Matrix<double, 6, 6>* H, Eigen::Matrix<double, 6, 1>* b) const;
+
+  void save_target_voxelmap(const std::string& filename);
 
 public:
   fast_gicp::NDTDistanceMode distance_mode;

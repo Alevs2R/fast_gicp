@@ -17,6 +17,8 @@ set(CMAKE_BUILD_TYPE "Release")
 
 find_package(PCL REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(Boost COMPONENTS serialization REQUIRED)
+link_directories(${Boost_LIBRARY_DIR})
 
 if(NOT BUILD_PYTHON_BINDINGS)
   find_package(catkin)
@@ -56,11 +58,13 @@ add_library(fast_gicp SHARED
 )
 target_link_libraries(fast_gicp
   ${PCL_LIBRARIES}
+  ${Boost_LIBRARIES}
 )
 target_include_directories(fast_gicp PUBLIC
   include
   ${PCL_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
+  ${Boost_INCLUDE_DIR}
 )
 
 ### APPS ###
@@ -72,12 +76,12 @@ if(BUILD_apps)
     fast_gicp
   )
 
-  add_executable(gicp_kitti src/kitti.cpp)
-  add_dependencies(gicp_kitti fast_gicp)
-  target_link_libraries(gicp_kitti
-    ${PCL_LIBRARIES}
-    fast_gicp
-  )
+  # add_executable(gicp_kitti src/kitti.cpp)
+  # add_dependencies(gicp_kitti fast_gicp)
+  # target_link_libraries(gicp_kitti
+  #   ${PCL_LIBRARIES}
+  #   fast_gicp
+  # )
 endif()
 
 ### Python bindings ###
@@ -119,10 +123,13 @@ if(BUILD_VGICP_CUDA)
     thirdparty/Eigen
     thirdparty/nvbio
     ${catkin_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIR}
   )
   target_link_libraries(fast_vgicp_cuda
     ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
   )
+
   cuda_add_cublas_to_target(fast_vgicp_cuda)
 
   # add vgicp_cuda to libfast_gicp
