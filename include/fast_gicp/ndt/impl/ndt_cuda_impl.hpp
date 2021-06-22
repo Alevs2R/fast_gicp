@@ -94,6 +94,11 @@ void NDTCuda<PointSource, PointTarget>::saveTargetVoxelMap(const std::string& fi
   ndt_cuda_->save_target_voxelmap(filename);
 }
 
+template <typename PointSource, typename PointTarget>
+void NDTCuda<PointSource, PointTarget>::loadTargetVoxelMap(const std::string& filename) {
+  ndt_cuda_->load_target_voxelmap(filename);
+}
+
 }  // namespace fast_gicp
 
 #endif

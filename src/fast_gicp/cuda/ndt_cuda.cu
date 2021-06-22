@@ -132,6 +132,7 @@ void NDTCudaCore::create_source_voxelmap() {
 void NDTCudaCore::create_target_voxelmap() {
   assert(target_points);
   if (target_voxelmap) {
+    printf("target voxelmap already exists, return\n");
     return;
   }
 
@@ -188,7 +189,20 @@ void NDTCudaCore::save_target_voxelmap(const std::string& filename) {
     oa << *target_voxelmap;
     // archive and stream closed when destructors are called
   }
+}
 
+void NDTCudaCore::load_target_voxelmap(const std::string& filename) {
+  // create and open a character archive for output
+  std::ifstream ifs(filename);
+  assert(ifs.good());
+  // save data to archive
+  {
+    target_voxelmap.reset(new GaussianVoxelMap(1.0));
+    boost::archive::binary_iarchive ia(ifs);
+    // write class instance to archive
+    ia >> (*target_voxelmap);
+    // archive and stream closed when destructors are called
+  }
 }
 
 }  // namespace cuda

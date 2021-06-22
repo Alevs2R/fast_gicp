@@ -10,6 +10,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/utility.hpp> // std::pair serialization
+#include <boost/serialization/split_member.hpp>
 
 #include <fast_gicp/boost_serialization_eigen.h>
 
@@ -56,8 +57,14 @@ public:
   thrust::device_vector<Eigen::Matrix3f> voxel_covs;
 
   friend class boost::serialization::access;
+
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);
+  void save(Archive & ar, const unsigned int version) const;
+
+  template <class Archive>
+  void load(Archive & ar, const unsigned int version);
+
+  BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
 }  // namespace cuda

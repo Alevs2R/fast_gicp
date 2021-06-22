@@ -285,38 +285,68 @@ void GaussianVoxelMap::create_bucket_table(cudaStream_t stream, const thrust::de
 }
 
 template <class Archive>
-void GaussianVoxelMap::serialize(Archive& ar, const unsigned int version) {
-    ar& voxelmap_info;
+void GaussianVoxelMap::save(Archive& ar, const unsigned int version) const {
+  ar& voxelmap_info;
 
-    thrust::host_vector<thrust::pair<Eigen::Vector3i, int>> buckets_host = buckets;
-    std::vector<std::pair<Eigen::Vector3i, int>> buckets_std(buckets_host.size());
-    
-    for (size_t i = 0; i < buckets_host.size(); i++) {
-      buckets_std[i] = std::make_pair(buckets_host[i].first, buckets_host[i].second);
-    }
+  thrust::host_vector<thrust::pair<Eigen::Vector3i, int>> buckets_host = buckets;
+  std::vector<std::pair<Eigen::Vector3i, int>> buckets_std(buckets_host.size());
 
-    ar & buckets_std;
+  for (size_t i = 0; i < buckets_host.size(); i++) {
+    buckets_std[i] = std::make_pair(buckets_host[i].first, buckets_host[i].second);
+  }
 
-    // save voxel data
-    thrust::host_vector<int> num_points_host = num_points;
-    std::vector<int> num_points_std(num_points.size());
-    std::copy(num_points_host.begin(), num_points_host.end(), num_points_std.begin());
+  ar& buckets_std;
 
-    thrust::host_vector<Eigen::Vector3f> voxel_means_host = voxel_means;
-    std::vector<Eigen::Vector3f> voxel_means_std(num_points.size());
-    std::copy(voxel_means_host.begin(), voxel_means_host.end(), voxel_means_std.begin());
+  // save voxel data
+  thrust::host_vector<int> num_points_host = num_points;
+  std::vector<int> num_points_std(num_points_host.begin(), num_points_host.end());
 
-    thrust::host_vector<Eigen::Matrix3f> voxel_covs_host = voxel_covs;
-    std::vector<Eigen::Matrix3f> voxel_covs_std(voxel_covs.size());
-    std::copy(voxel_covs_host.begin(), voxel_covs_host.end(), voxel_covs_std.begin());
+  thrust::host_vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> voxel_means_host = voxel_means;
+  std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> voxel_means_std(voxel_means_host.begin(), voxel_means_host.end());
 
-    ar& num_points_std;
-    ar& voxel_means_std;
-    ar& voxel_covs_std;
+  thrust::host_vector<Eigen::Matrix3f, Eigen::aligned_allocator<Eigen::Matrix3f>> voxel_covs_host = voxel_covs;
+  std::vector<Eigen::Matrix3f, Eigen::aligned_allocator<Eigen::Matrix3f>> voxel_covs_std(voxel_covs_host.begin(), voxel_covs_host.end());
+
+  ar& num_points_std;
+  ar& voxel_means_std;
+  ar& voxel_covs_std;
 }
 
-template void GaussianVoxelMap::serialize<boost::archive::binary_oarchive>(boost::archive::binary_oarchive& ar, const unsigned int version);
+template <class Archive>
+void GaussianVoxelMap::load(Archive& ar, const unsigned int version) {
+  VoxelMapInfo voxelmap_info_local;
+  std::vector<int> num_points_std;
+  std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> voxel_means_std;
+  std::vector<Eigen::Matrix3f, Eigen::aligned_allocator<Eigen::Matrix3f>> voxel_covs_std;
+  std::vector<std::pair<Eigen::Vector3i, int>> buckets_std;
 
+  ar& voxelmap_info;
+  ar& buckets_std;
+  ar& num_points_std;
+  ar& voxel_means_std;
+  ar& voxel_covs_std;
+  printf("buckets size %d \n",buckets_std.size());
+
+  thrust::host_vector<int> num_points_host(num_points_std.begin(), num_points_std.end());
+  num_points = num_points_host;
+
+  thrust::host_vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> voxel_means_host(voxel_means_std.begin(), voxel_means_std.end());
+  voxel_means = voxel_means_host;
+
+  thrust::host_vector<Eigen::Matrix3f, Eigen::aligned_allocator<Eigen::Matrix3f>> voxel_covs_host(voxel_covs_std.begin(), voxel_covs_std.end());
+  voxel_covs = voxel_covs_host;
+
+  thrust::host_vector<thrust::pair<Eigen::Vector3i, int>> buckets_host(buckets_std.size());
+
+  for (size_t i = 0; i < buckets_std.size(); i++) {
+    buckets_host[i] = thrust::make_pair(buckets_std[i].first, buckets_std[i].second);
+  }
+
+  buckets = buckets_host;
+}
+
+template void GaussianVoxelMap::save<boost::archive::binary_oarchive>(boost::archive::binary_oarchive& ar, const unsigned int version) const;
+template void GaussianVoxelMap::load<boost::archive::binary_iarchive>(boost::archive::binary_iarchive& ar, const unsigned int version);
 
 }  // namespace cuda
 }  // namespace fast_gicp

@@ -13,6 +13,8 @@
 #include <fast_gicp/gicp/fast_gicp_st.hpp>
 #include <fast_gicp/gicp/fast_vgicp.hpp>
 
+#define USE_VGICP_CUDA
+
 #ifdef USE_VGICP_CUDA
 #include <fast_gicp/ndt/ndt_cuda.hpp>
 #include <fast_gicp/gicp/fast_vgicp_cuda.hpp>
@@ -186,13 +188,51 @@ int main(int argc, char** argv) {
   fast_gicp::NDTCuda<pcl::PointXYZ, pcl::PointXYZ> ndt_cuda;
   ndt_cuda.setResolution(1.0);
   ndt_cuda.setDistanceMode(fast_gicp::NDTDistanceMode::P2D);
-
-  ndt_cuda.clearTarget();
-  ndt_cuda.clearSource();
   ndt_cuda.setInputTarget(target_cloud);
   ndt_cuda.setInputSource(source_cloud);
+  // ndt_cuda.align(*aligned);
+  // ndt_cuda.loadTargetVoxelMap("test_map.bin");
+  auto t1 = std::chrono::high_resolution_clock::now();
   ndt_cuda.align(*aligned);
-  ndt_cuda.saveTargetVoxelMap("test_map.bin");
+  auto t2 = std::chrono::high_resolution_clock::now();
+  double comp_time = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count() / 1e6;
+  std::cout << "computation 1  time " << comp_time << "ms" << std::endl;
+
+  fast_gicp::NDTCuda<pcl::PointXYZ, pcl::PointXYZ> ndt_cuda_2;
+  ndt_cuda_2.setResolution(1.0);
+  ndt_cuda_2.setDistanceMode(fast_gicp::NDTDistanceMode::P2D);
+  // ndt_cuda_2.setDebugPrint(true);
+  ndt_cuda_2.setInputTarget(target_cloud);
+  ndt_cuda_2.setInputSource(source_cloud);
+  // ndt_cuda.align(*aligned);
+  // ndt_cuda_2.loadTargetVoxelMap("test_map.bin");
+
+  t1 = std::chrono::high_resolution_clock::now();
+  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
+  // tree->setInputCloud(target_cloud);
+  t2 = std::chrono::high_resolution_clock::now();
+  comp_time = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count() / 1e6;
+  std::cout << "kdtree init time " << comp_time << "ms" << std::endl;
+
+  ndt_cuda_2.setSearchMethodTarget(tree, true);
+
+  t1 = std::chrono::high_resolution_clock::now();
+  ndt_cuda_2.align(*aligned);
+  t2 = std::chrono::high_resolution_clock::now();
+  comp_time = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count() / 1e6;
+  std::cout << "computation 2 time " << comp_time << "ms" << std::endl;
+
+
+  ndt_cuda_2.clearSource();
+  ndt_cuda_2.setInputSource(source_cloud);
+  t1 = std::chrono::high_resolution_clock::now();
+  ndt_cuda_2.align(*aligned);
+  t2 = std::chrono::high_resolution_clock::now();
+  comp_time = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count() / 1e6;
+  std::cout << "computation 3 time " << comp_time << "ms" << std::endl;
+
+
+  // ndt_cuda_2.saveTargetVoxelMap("test_map.bin");
 
   // test(ndt_cuda, target_cloud, source_cloud);
 

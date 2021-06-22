@@ -1,0 +1,21 @@
+syntax = "proto2";
+
+message GaussianVoxelMapInfo {
+    optional int32 num_voxels = 1;
+    optional int32 num_buckets = 2;
+    optional int32 max_bucket_scan_count = 3;
+    optional float voxel_resolution = 4;
+}
+
+message Vector3f {
+    repeated double values = 1 [packed=true];
+}
+
+message Matrix3f {
+    repeated double values = 1 [packed=true];
+}
+
+message GaussianVoxelMapData {
+    optional GaussianVoxelMapInfo voxelmap_info = 1;
+
+}

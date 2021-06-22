@@ -54,6 +54,7 @@ public:
   virtual void setInputTarget(const PointCloudTargetConstPtr& cloud) override;
 
   void saveTargetVoxelMap(const std::string& filename);
+  void loadTargetVoxelMap(const std::string& filename);
 
 protected:
   virtual void computeTransformation(PointCloudSource& output, const Matrix4& guess) override;

@@ -56,6 +56,7 @@ public:
   double compute_error(const Eigen::Isometry3d& trans, Eigen::Matrix<double, 6, 6>* H, Eigen::Matrix<double, 6, 1>* b) const;
 
   void save_target_voxelmap(const std::string& filename);
+  void load_target_voxelmap(const std::string& filename);
 
 public:
   fast_gicp::NDTDistanceMode distance_mode;
