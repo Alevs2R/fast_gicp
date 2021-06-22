@@ -52,7 +52,7 @@ template <typename Registration>
 void test(Registration& reg, const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& target, const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& source) {
   pcl::PointCloud<pcl::PointXYZ>::Ptr aligned(new pcl::PointCloud<pcl::PointXYZ>);
 
-  double fitness_score = 0.0;
+  // double fitness_score = 0.0;
 
   // single run
   auto t1 = std::chrono::high_resolution_clock::now();
@@ -62,20 +62,26 @@ void test(Registration& reg, const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& tar
   reg.clearSource();
   reg.setInputTarget(target);
   reg.setInputSource(source);
+  
+  pcl::search::KdTree<pcl::PointXYZ>::Ptr empty_kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
+  reg.setSearchMethodTarget(empty_kdtree, true);
+
   reg.align(*aligned);
   auto t2 = std::chrono::high_resolution_clock::now();
-  fitness_score = reg.getFitnessScore();
+  // fitness_score = reg.getFitnessScore();
   double single = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count() / 1e6;
 
   std::cout << "single:" << single << "[msec] " << std::flush;
 
   // 100 times
   t1 = std::chrono::high_resolution_clock::now();
+
   for (int i = 0; i < 100; i++) {
     reg.clearTarget();
     reg.clearSource();
     reg.setInputTarget(target);
     reg.setInputSource(source);
+    reg.setSearchMethodTarget(empty_kdtree, true);
     reg.align(*aligned);
   }
   t2 = std::chrono::high_resolution_clock::now();
@@ -90,7 +96,6 @@ void test(Registration& reg, const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& tar
   for (int i = 0; i < 100; i++) {
     reg.swapSourceAndTarget();
     reg.clearSource();
-
     reg.setInputTarget(target_);
     reg.setInputSource(source_);
     reg.align(*aligned);
@@ -100,7 +105,7 @@ void test(Registration& reg, const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& tar
   t2 = std::chrono::high_resolution_clock::now();
   double reuse = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count() / 1e6;
 
-  std::cout << "100times_reuse:" << reuse << "[msec] fitness_score:" << fitness_score << std::endl;
+  std::cout << "100times_reuse:" << reuse << "[msec]" << std::endl;
 }
 
 /**
@@ -148,14 +153,14 @@ int main(int argc, char** argv) {
 
   std::cout << "target:" << target_cloud->size() << "[pts] source:" << source_cloud->size() << "[pts]" << std::endl;
 
-  std::cout << "--- pcl_gicp ---" << std::endl;
-  pcl::GeneralizedIterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> pcl_gicp;
-  test_pcl(pcl_gicp, target_cloud, source_cloud);
+  // std::cout << "--- pcl_gicp ---" << std::endl;
+  // pcl::GeneralizedIterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> pcl_gicp;
+  // test_pcl(pcl_gicp, target_cloud, source_cloud);
 
-  std::cout << "--- pcl_ndt ---" << std::endl;
-  pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> pcl_ndt;
-  pcl_ndt.setResolution(1.0);
-  test_pcl(pcl_ndt, target_cloud, source_cloud);
+  // std::cout << "--- pcl_ndt ---" << std::endl;
+  // pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> pcl_ndt;
+  // pcl_ndt.setResolution(1.0);
+  // test_pcl(pcl_ndt, target_cloud, source_cloud);
 
   std::cout << "--- fgicp_st ---" << std::endl;
   fast_gicp::FastGICPSingleThread<pcl::PointXYZ, pcl::PointXYZ> fgicp_st;
